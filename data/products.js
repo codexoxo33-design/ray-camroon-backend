@@ -1,0 +1,48 @@
+const products = [
+    {
+      name: 'Premium Smart Watch',
+      image: '/images/watch.jpg',
+      description: 'AMOLED Display • GPS • Heart Rate Monitor',
+      brand: 'TechWave',
+      category: 'Electronics',
+      price: 7499,
+      countInStock: 10,
+      rating: 4.5,
+      numReviews: 12,
+    },
+    {
+      name: 'Wireless Headphones',
+      image: '/images/headphones.jpg',
+      description: 'Noise Cancelling • 30-Hour Battery • Hi-Fi Audio',
+      brand: 'SoundBliss',
+      category: 'Electronics',
+      price: 8499,
+      countInStock: 7,
+      rating: 4.0,
+      numReviews: 8,
+    },
+    {
+      name: 'Pro Running Shoes',
+      image: '/images/shoes.jpg',
+      description: 'Lightweight Mesh • Responsive Cushioning',
+      brand: 'AeroStride',
+      category: 'Apparel',
+      price: 7299,
+      countInStock: 15,
+      rating: 4.8,
+      numReviews: 20,
+    },
+    {
+      name: 'Modern Leather Sofa',
+      image: '/images/sofa.jpg',
+      description: 'Genuine Leather • Oak Wood Frame • 3-Seater',
+      brand: 'ComfyHome',
+      category: 'Home',
+      price: 45000,
+      countInStock: 5,
+      rating: 4.9,
+      numReviews: 15,
+    },
+  ];
+  
+  module.exports = products;
