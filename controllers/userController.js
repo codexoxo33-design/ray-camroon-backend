@@ -187,4 +187,75 @@ async function removeFromCart(req, res) {
   }
 }
 
-module.exports = { registerUser, loginUser, addToCart, getUserCart, updateCartItemQuantity, removeFromCart };
+async function getUserProfile(req, res) {
+  try {
+    const userId = req.user && req.user.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email
+    });
+  } catch (error) {
+    console.error('Get user profile error:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+}
+
+async function updateUserProfile(req, res) {
+  try {
+    const userId = req.user && req.user.id;
+    const { name, email, password } = req.body || {};
+
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update name if provided
+    if (name) {
+      user.name = name;
+    }
+
+    // Update email if provided
+    if (email) {
+      user.email = email;
+    }
+
+    // Update password if provided
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    await user.save();
+
+    // Generate new token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+    return res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token
+    });
+  } catch (error) {
+    console.error('Update user profile error:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+}
+
+module.exports = { registerUser, loginUser, addToCart, getUserCart, updateCartItemQuantity, removeFromCart, getUserProfile, updateUserProfile };

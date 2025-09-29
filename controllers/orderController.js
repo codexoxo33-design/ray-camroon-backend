@@ -25,4 +25,15 @@ async function addOrderItems(req, res) {
   }
 }
 
-module.exports = { addOrderItems };
+async function getMyOrders(req, res) {
+  try {
+    const userId = req.user._id;
+    const orders = await Order.find({ user: userId });
+    return res.status(200).json(orders);
+  } catch (error) {
+    console.error('Get my orders error:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+}
+
+module.exports = { addOrderItems, getMyOrders };
