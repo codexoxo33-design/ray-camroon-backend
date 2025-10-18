@@ -27,7 +27,7 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRoutes); // Yeh line server ko batati hai ki /api/users se shuru hone wale sabhi routes userRoutes file mein milenge
 app.use('/api/products', productRoutes); // << YEH NAYI LINE ADD KAREIN
 app.use('/api/orders', orderRoutes);
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

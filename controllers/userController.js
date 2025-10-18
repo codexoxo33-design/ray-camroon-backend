@@ -1,10 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-// Is line ko check karein aur theek karein
 const User = require('../models/userModel.js');
 
+// Register a new user
 async function registerUser(req, res) {
-  // ... (Register ka poora code yahan)
   try {
     const { name, email, password } = req.body || {};
     if (!name || !email || !password) {
@@ -33,8 +32,8 @@ async function registerUser(req, res) {
   }
 }
 
+// Authenticate a user and get token
 async function loginUser(req, res) {
-  // ... (Login ka poora code yahan)
   try {
     const { email, password } = req.body || {};
     if (!email || !password) {
@@ -61,6 +60,7 @@ async function loginUser(req, res) {
   }
 }
 
+// Add an item to the user's cart
 async function addToCart(req, res) {
   try {
     const { productId } = req.body || {};
@@ -94,6 +94,7 @@ async function addToCart(req, res) {
   }
 }
 
+// Get the user's cart
 async function getUserCart(req, res) {
   try {
     const userId = req.user && req.user.id;
@@ -114,6 +115,7 @@ async function getUserCart(req, res) {
   }
 }
 
+// Update quantity of a cart item
 async function updateCartItemQuantity(req, res) {
   try {
     const userId = req.user && req.user.id;
@@ -140,13 +142,12 @@ async function updateCartItemQuantity(req, res) {
     if (quantity > 0) {
       cartItem.quantity = quantity;
     } else {
-      // Remove item from cart if quantity is 0 or less
+      // Remove item if quantity is 0 or less
       user.cart = user.cart.filter((item) => item.product.toString() !== productId);
     }
 
     await user.save();
 
-    // Return updated cart with populated product details
     const updatedUser = await User.findById(userId).populate('cart.product');
     return res.status(200).json(updatedUser.cart);
   } catch (error) {
@@ -155,6 +156,7 @@ async function updateCartItemQuantity(req, res) {
   }
 }
 
+// Remove an item from the cart
 async function removeFromCart(req, res) {
   try {
     const userId = req.user && req.user.id;
@@ -173,12 +175,10 @@ async function removeFromCart(req, res) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Remove the item from cart that matches the productId
     user.cart = user.cart.filter((item) => item.product.toString() !== productId);
 
     await user.save();
 
-    // Return updated cart with populated product details
     const updatedUser = await User.findById(userId).populate('cart.product');
     return res.status(200).json(updatedUser.cart);
   } catch (error) {
@@ -187,6 +187,7 @@ async function removeFromCart(req, res) {
   }
 }
 
+// Get user profile
 async function getUserProfile(req, res) {
   try {
     const userId = req.user && req.user.id;
@@ -203,7 +204,7 @@ async function getUserProfile(req, res) {
     return res.status(200).json({
       _id: user._id,
       name: user.name,
-      email: user.email
+      email: user.email,
     });
   } catch (error) {
     console.error('Get user profile error:', error);
@@ -211,11 +212,10 @@ async function getUserProfile(req, res) {
   }
 }
 
+// Update user profile
 async function updateUserProfile(req, res) {
   try {
     const userId = req.user && req.user.id;
-    const { name, email, password } = req.body || {};
-
     if (!userId) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
@@ -225,68 +225,40 @@ async function updateUserProfile(req, res) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Update name if provided
-    if (name) {
-      user.name = name;
-    }
+    // Update fields if they are provided in the request
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
 
-    // Update email if provided
-    if (email) {
-      user.email = email;
-    }
-
-    // Update password if provided
-    if (password) {
+    if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
+      user.password = await bcrypt.hash(req.body.password, salt);
     }
 
-    await user.save();
+    const updatedUser = await user.save();
 
-    // Generate new token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    // Generate a new token with updated info
+    const token = jwt.sign({ id: updatedUser._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 
     return res.status(200).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      token,
     });
   } catch (error) {
     console.error('Update user profile error:', error);
     return res.status(500).json({ message: 'Server error' });
   }
 }
-async function updateUserProfile(req, res) {
-  try {
-    const user = await User.findById(req.user.id);
 
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
-
-      if (req.body.password) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(req.body.password, salt);
-      }
-
-      const updatedUser = await user.save();
-
-      const token = jwt.sign({ id: updatedUser._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-
-      res.json({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        token,
-      });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error('Update profile error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-}
-// Purani line ko isse badlein
-module.exports = { registerUser, loginUser, addToCart, getUserCart, updateCartItemQuantity, removeFromCart, getUserProfile, updateUserProfile }; 
+// Export all controller functions
+module.exports = {
+  registerUser,
+  loginUser,
+  addToCart,
+  getUserCart,
+  updateCartItemQuantity,
+  removeFromCart,
+  getUserProfile,
+  updateUserProfile,
+};
