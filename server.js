@@ -1,8 +1,9 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
+const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
-const productRoutes = require('./routes/productRoutes'); 
+const productRoutes = require('./routes/productroutes'); 
 const orderRoutes = require('./routes/orderRoutes');
 
 async function connectDB() {
@@ -19,7 +20,7 @@ connectDB();
 
 const app = express();
 app.use(express.json()); // Yeh line aane wali requests ko JSON ke roop mein pehchanne mein madad karti hai
-
+app.use(cors());
 app.get('/', (req, res) => {
   res.send('API is running...');
 });

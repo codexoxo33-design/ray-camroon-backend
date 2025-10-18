@@ -145,7 +145,7 @@ async function updateCartItemQuantity(req, res) {
     }
 
     await user.save();
-    
+
     // Return updated cart with populated product details
     const updatedUser = await User.findById(userId).populate('cart.product');
     return res.status(200).json(updatedUser.cart);
@@ -257,5 +257,36 @@ async function updateUserProfile(req, res) {
     return res.status(500).json({ message: 'Server error' });
   }
 }
+async function updateUserProfile(req, res) {
+  try {
+    const user = await User.findById(req.user.id);
 
-module.exports = { registerUser, loginUser, addToCart, getUserCart, updateCartItemQuantity, removeFromCart, getUserProfile, updateUserProfile };
+    if (user) {
+      user.name = req.body.name || user.name;
+      user.email = req.body.email || user.email;
+
+      if (req.body.password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(req.body.password, salt);
+      }
+
+      const updatedUser = await user.save();
+
+      const token = jwt.sign({ id: updatedUser._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        token,
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+// Purani line ko isse badlein
+module.exports = { registerUser, loginUser, addToCart, getUserCart, updateCartItemQuantity, removeFromCart, getUserProfile, updateUserProfile }; 
